@@ -1,0 +1,170 @@
+---
+import { Image } from 'astro:assets';
+import type { Lang } from '../i18n/ui';
+import { useTranslations } from '../i18n/ui';
+import { href } from '../lib/paths';
+import type { Project } from '../lib/projects';
+import { getAlt, getCover, getProjectImages } from '../lib/images';
+
+interface Props {
+  lang: Lang;
+  project: Project;
+  sizes?: string;
+}
+
+const {
+  lang,
+  project,
+  sizes = '(min-width: 1100px) 30vw, (min-width: 600px) 46vw, 92vw',
+} = Astro.props;
+const t = useTranslations(lang);
+const slug = project.id;
+const images = getProjectImages(slug);
+const cover = getCover(images);
+const alt = cover ? getAlt(images, cover) : undefined;
+const { title, category, date } = project.data;
+---
+
+<a
+  class="project-card"
+  href={href(`/work/${slug}`, lang)}
+  data-category={category}
+  data-slug={slug}
+>
+  <div class="project-card__media">
+    {
+      cover && (
+        <Image
+          class="project-card__cover"
+          src={cover.file}
+          alt={title}
+          widths={[400, 700, 1000, 1400]}
+          sizes={sizes}
+          loading="lazy"
+          format="webp"
+          transition:name={`cover-${slug}`}
+        />
+      )
+    }
+    {
+      alt && (
+        <Image
+          class="project-card__alt"
+          src={alt.file}
+          alt=""
+          aria-hidden="true"
+          widths={[400, 700, 1000, 1400]}
+          sizes={sizes}
+          loading="lazy"
+          format="webp"
+        />
+      )
+    }
+  </div>
+  <div class="project-card__body">
+    <p class="eyebrow">{t(`category.${category}`)} · {date}</p>
+    <h3 class="project-card__title"><span class="project-card__title-text">{title}</span></h3>
+    <span class="project-card__link">{t('work.viewProject')} &rarr;</span>
+  </div>
+</a>
+
+<style>
+  .project-card {
+    display: block;
+    color: var(--color-text);
+  }
+
+  .project-card[hidden] {
+    display: none;
+  }
+
+  .project-card__media {
+    position: relative;
+    aspect-ratio: 4 / 5;
+    overflow: hidden;
+    background: var(--color-bg-raised);
+  }
+
+  .project-card__media :global(img) {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .project-card__media :global(.project-card__cover) {
+    transition: transform 0.6s var(--ease);
+  }
+
+  .project-card__media :global(.project-card__alt) {
+    opacity: 0;
+    transition: opacity 0.6s var(--ease);
+  }
+
+  .project-card__body {
+    padding-top: 1.1rem;
+  }
+
+  .project-card__title {
+    font-size: 1.35rem;
+    margin-top: 0.3rem;
+  }
+
+  .project-card__title-text {
+    position: relative;
+  }
+
+  .project-card__link {
+    display: inline-block;
+    margin-top: 0.6rem;
+    font-size: 0.82rem;
+    letter-spacing: 0.02em;
+    color: var(--color-text-muted);
+    transition: color 0.3s var(--ease);
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    /* Underline slides in from the left (scaleX on a pseudo element). */
+    .project-card__title-text::after {
+      content: '';
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: 1px;
+      background: currentColor;
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform 0.5s var(--ease);
+    }
+
+    .project-card:hover .project-card__title-text::after,
+    .project-card:focus-visible .project-card__title-text::after {
+      transform: scaleX(1);
+    }
+
+    .project-card:hover .project-card__media :global(.project-card__alt),
+    .project-card:focus-visible .project-card__media :global(.project-card__alt) {
+      opacity: 1;
+    }
+
+    .project-card:hover .project-card__media :global(.project-card__cover),
+    .project-card:focus-visible .project-card__media :global(.project-card__cover) {
+      transform: scale(1.03);
+    }
+
+    .project-card:hover .project-card__link,
+    .project-card:focus-visible .project-card__link {
+      color: var(--color-accent);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .project-card__media :global(img),
+    .project-card__title-text::after,
+    .project-card__link {
+      transition: none !important;
+    }
+  }
+</style>

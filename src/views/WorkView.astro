@@ -1,0 +1,130 @@
+---
+import type { Lang } from '../i18n/ui';
+import { useTranslations } from '../i18n/ui';
+import { getProjects } from '../lib/projects';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import ProjectCard from '../components/ProjectCard.astro';
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const t = useTranslations(lang);
+const projects = await getProjects(lang);
+const showFilters = projects.length >= 4;
+const categories = (['ecommerce', 'lifestyle', 'still-life'] as const).filter((c) =>
+  projects.some((p) => p.data.category === c),
+);
+---
+
+<BaseLayout
+  lang={lang}
+  path="/work"
+  altPath="/work"
+  title={`${t('work.heading')} | ${t('site.title')}`}
+>
+  <section class="wrap work">
+    <header class="work__header fade-in">
+      <p class="eyebrow">{t('work.eyebrow')}</p>
+      <h1>{t('work.heading')}</h1>
+      <p class="work__intro">{t('work.intro')}</p>
+    </header>
+
+    {
+      showFilters && (
+        <div class="work__filters" role="group" aria-label={t('filter.label')} data-filters hidden>
+          <button type="button" class="chip" data-filter="all" aria-pressed="true">
+            {t('filter.all')}
+          </button>
+          {categories.map((c) => (
+            <button type="button" class="chip" data-filter={c} aria-pressed="false">
+              {t(`category.${c}`)}
+            </button>
+          ))}
+        </div>
+      )
+    }
+
+    <div class="work__grid" data-work-grid>
+      {projects.map((project) => <ProjectCard lang={lang} project={project} />)}
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .work {
+    padding-block: 8.5rem 5rem;
+  }
+
+  .work__header h1 {
+    margin-top: 0.4rem;
+  }
+
+  .work__intro {
+    margin-top: 1rem;
+    color: var(--color-text-muted);
+    max-width: 46ch;
+  }
+
+  .work__filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 2.25rem;
+  }
+
+  .work__filters[hidden] {
+    display: none;
+  }
+
+  .chip {
+    padding: 0.5rem 1rem;
+    border: 1px solid var(--color-border);
+    border-radius: 2px;
+    background: transparent;
+    color: var(--color-text);
+    font-size: 0.82rem;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    transition: background 0.25s var(--ease), color 0.25s var(--ease),
+      border-color 0.25s var(--ease);
+  }
+
+  .chip[aria-pressed='true'] {
+    background: var(--color-text);
+    border-color: var(--color-text);
+    color: var(--color-bg);
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .chip:hover {
+      border-color: var(--color-text);
+    }
+  }
+
+  .work__grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2.5rem 1.5rem;
+    margin-top: 2.5rem;
+  }
+
+  @media (min-width: 600px) {
+    .work__grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (min-width: 1100px) {
+    .work__grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .chip {
+      transition: none;
+    }
+  }
+</style>

@@ -1,0 +1,44 @@
+---
+import type { Lang } from '../i18n/ui';
+import { useTranslations } from '../i18n/ui';
+import { href } from '../lib/paths';
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const t = useTranslations(lang);
+---
+
+<section class="cta fade-in">
+  <div class="wrap cta__inner">
+    <h2 class="cta__heading">{t('cta.heading')}</h2>
+    <a class="btn btn--light" href={href('/contact', lang)}>{t('cta.button')}</a>
+  </div>
+</section>
+
+<style>
+  .cta {
+    background: #111214;
+    color: var(--color-on-dark);
+    padding-block: 4.5rem;
+  }
+
+  .cta__inner {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1.75rem;
+  }
+
+  .cta__heading {
+    color: var(--color-on-dark);
+    font-size: clamp(1.8rem, 4.5vw, 3rem);
+    max-width: 22ch;
+  }
+
+  .cta :focus-visible {
+    outline-color: var(--color-on-dark);
+  }
+</style>

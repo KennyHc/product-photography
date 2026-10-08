@@ -1,0 +1,147 @@
+---
+import { Image } from 'astro:assets';
+import type { Lang } from '../i18n/ui';
+import { useTranslations } from '../i18n/ui';
+import type { RetouchPair } from '../lib/images';
+
+interface Props {
+  lang: Lang;
+  pair: RetouchPair;
+  title: string;
+}
+
+const { lang, pair, title } = Astro.props;
+const t = useTranslations(lang);
+const { before, after } = pair;
+---
+
+<div
+  class="ba"
+  data-ba
+  style={`aspect-ratio: ${before.file.width} / ${before.file.height}; --ratio: ${before.file.width / before.file.height}`}
+>
+  <Image
+    class="ba__img"
+    src={before.file}
+    alt={`${title}, ${t('ba.before')}`}
+    widths={[640, 1000, 1400, 2000]}
+    sizes="(min-width: 1100px) 700px, 92vw"
+    loading="lazy"
+    format="webp"
+  />
+  <Image
+    class="ba__img ba__img--after"
+    src={after.file}
+    alt={`${title}, ${t('ba.after')}`}
+    widths={[640, 1000, 1400, 2000]}
+    sizes="(min-width: 1100px) 700px, 92vw"
+    loading="lazy"
+    format="webp"
+  />
+  <span class="ba__chip ba__chip--before eyebrow" aria-hidden="true">{t('ba.before')}</span>
+  <span class="ba__chip ba__chip--after eyebrow" aria-hidden="true">{t('ba.after')}</span>
+  <span class="ba__line" aria-hidden="true"></span>
+  <span class="ba__handle" aria-hidden="true">
+    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M9 7l-5 5 5 5"></path>
+      <path d="M15 7l5 5-5 5"></path>
+    </svg>
+  </span>
+  <input
+    class="ba__range"
+    type="range"
+    min="0"
+    max="100"
+    step="1"
+    value="50"
+    aria-label={t('ba.label')}
+  />
+</div>
+
+<style>
+  .ba {
+    --pos: 50%;
+    position: relative;
+    /* Never taller than about 78% of the screen. */
+    width: min(100%, 700px, calc(78svh * var(--ratio)));
+    overflow: hidden;
+    background: var(--color-bg-raised);
+    touch-action: pan-y;
+    user-select: none;
+  }
+
+  .ba :global(.ba__img) {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    pointer-events: none;
+  }
+
+  .ba :global(.ba__img--after) {
+    clip-path: inset(0 0 0 var(--pos));
+  }
+
+  .ba__chip {
+    position: absolute;
+    top: 0.75rem;
+    padding: 0.25rem 0.55rem;
+    background: rgba(17, 18, 20, 0.55);
+    color: #fff;
+    pointer-events: none;
+  }
+
+  .ba__chip--before {
+    left: 0.75rem;
+  }
+
+  .ba__chip--after {
+    right: 0.75rem;
+  }
+
+  .ba__line {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: var(--pos);
+    width: 1px;
+    background: #fff;
+    transform: translateX(-0.5px);
+    pointer-events: none;
+  }
+
+  .ba__handle {
+    position: absolute;
+    top: 50%;
+    left: var(--pos);
+    width: 2.75rem;
+    height: 2.75rem;
+    border-radius: 50%;
+    border: 1px solid var(--color-border);
+    background: #fff;
+    color: var(--color-text);
+    display: grid;
+    place-items: center;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+  }
+
+  .ba__range {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    opacity: 0;
+    cursor: ew-resize;
+    touch-action: pan-y;
+    -webkit-appearance: none;
+    appearance: none;
+  }
+
+  .ba:has(.ba__range:focus-visible) .ba__handle {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 3px;
+  }
+</style>

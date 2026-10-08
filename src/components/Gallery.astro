@@ -1,0 +1,117 @@
+---
+import { Image } from 'astro:assets';
+import type { Lang } from '../i18n/ui';
+import { useTranslations } from '../i18n/ui';
+import type { ProjectImage } from '../lib/images';
+import { getFullUrl } from '../lib/images';
+
+interface Props {
+  lang: Lang;
+  images: ProjectImage[];
+  title: string;
+}
+
+const { lang, images, title } = Astro.props;
+const t = useTranslations(lang);
+const total = images.length;
+const fullUrls = await Promise.all(images.map((img) => getFullUrl(img.file)));
+---
+
+<div class="gallery">
+  {
+    images.map((img, i) => {
+      const alt = `${title}, ${t('project.photoAlt')} ${i + 1}`;
+      return (
+        <button
+          type="button"
+          class="gallery__item"
+          style={`--r: ${(img.file.width / img.file.height).toFixed(4)}`}
+          data-lightbox-trigger
+          data-full={fullUrls[i]}
+          data-w={img.file.width}
+          data-h={img.file.height}
+          data-alt={alt}
+          aria-label={t('gallery.open', { n: i + 1, total })}
+        >
+          <Image
+            src={img.file}
+            alt={alt}
+            widths={[400, 700, 1000, 1400]}
+            sizes="(min-width: 1100px) 30vw, (min-width: 560px) 45vw, 60vw"
+            loading="lazy"
+            format="webp"
+          />
+        </button>
+      );
+    })
+  }
+</div>
+
+<style>
+  .gallery {
+    --row-h: 15rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+
+  /* Keeps the last row from stretching to full width. */
+  .gallery::after {
+    content: '';
+    flex-grow: 1000000;
+  }
+
+  .gallery__item {
+    flex: calc(var(--r) * 100) 1 calc(var(--r) * var(--row-h));
+    aspect-ratio: var(--r);
+    min-width: 0;
+    padding: 0;
+    margin: 0;
+    border: none;
+    border-radius: 0;
+    background: var(--color-bg-raised);
+    cursor: zoom-in;
+    overflow: hidden;
+    transition: transform 0.4s var(--ease);
+  }
+
+  .gallery__item :global(img) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  @media (min-width: 768px) {
+    .gallery {
+      --row-h: 20rem;
+    }
+  }
+
+  @media (min-width: 1100px) {
+    .gallery {
+      --row-h: 24rem;
+    }
+  }
+
+  /* Phones: short rows, so squares and portraits sit two to a row and a
+     landscape gets a row to itself. Easier to scan than one long column. */
+  @media (max-width: 559px) {
+    .gallery {
+      --row-h: 10rem;
+      gap: 0.5rem;
+    }
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .gallery__item:hover,
+    .gallery__item:focus-visible {
+      transform: translateY(-3px);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .gallery__item {
+      transition: none;
+    }
+  }
+</style>

@@ -1,0 +1,81 @@
+---
+import type { Lang } from '../i18n/ui';
+import { useTranslations } from '../i18n/ui';
+import { href } from '../lib/paths';
+import { site, emailHref, whatsappHref, instagramHref } from '../lib/site';
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const t = useTranslations(lang);
+const year = new Date().getFullYear();
+---
+
+<footer class="footer">
+  <div class="wrap footer__inner">
+    <a href={href('/', lang)} class="footer__brand">{site.name}</a>
+
+    <div class="footer__links">
+      <a href={emailHref}>{site.email}</a>
+      <a href={instagramHref} target="_blank" rel="noopener noreferrer">{t('contact.instagram')}</a>
+      <a href={whatsappHref} target="_blank" rel="noopener noreferrer">{t('contact.whatsapp')}</a>
+    </div>
+
+    <p class="footer__sister">
+      {t('footer.events')}{' '}
+      <a href={site.eventSiteUrl} target="_blank" rel="noopener noreferrer">{t('footer.eventsLink')}</a>
+    </p>
+
+    <p class="footer__rights">&copy; {year} {site.name}. {t('footer.rights')}</p>
+  </div>
+</footer>
+
+<style>
+  .footer {
+    border-top: 1px solid var(--color-border);
+    background: var(--color-bg-raised);
+    padding-block: 3rem 2.5rem;
+  }
+
+  .footer__inner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.1rem;
+    text-align: center;
+  }
+
+  .footer__brand {
+    font-family: var(--font-serif);
+    font-size: 1.25rem;
+  }
+
+  .footer__links {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.5rem 1.5rem;
+    font-size: 0.85rem;
+    color: var(--color-text-muted);
+  }
+
+  .footer__sister,
+  .footer__rights {
+    font-size: 0.78rem;
+    color: var(--color-text-muted);
+  }
+
+  .footer__sister a {
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .footer__links a:hover,
+    .footer__sister a:hover {
+      color: var(--color-text);
+    }
+  }
+</style>

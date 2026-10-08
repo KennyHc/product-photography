@@ -1,0 +1,275 @@
+---
+import type { Lang, UiKey } from '../i18n/ui';
+import { useTranslations } from '../i18n/ui';
+import { href } from '../lib/paths';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import CtaBand from '../components/CtaBand.astro';
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const t = useTranslations(lang);
+const k = (key: string) => t(key as UiKey);
+const nums = (n: number) => Array.from({ length: n }, (_, i) => i + 1);
+const pad = (n: number) => String(n).padStart(2, '0');
+---
+
+<BaseLayout
+  lang={lang}
+  path="/services"
+  altPath="/services"
+  title={`${t('services.heading')} | ${t('site.title')}`}
+>
+  <section class="wrap head">
+    <div class="fade-in">
+      <p class="eyebrow">{t('services.eyebrow')}</p>
+      <h1>{t('services.heading')}</h1>
+    </div>
+  </section>
+
+  <section class="wrap block">
+    <h2 class="fade-in">{t('services.packages.heading')}</h2>
+    <div class="packages fade-in">
+      {
+        nums(3).map((n) => (
+          <article class="pkg">
+            <h3>{k(`services.pkg${n}.name`)}</h3>
+            <p class="pkg__scope">{k(`services.pkg${n}.scope`)}</p>
+            <p class="pkg__ideal">{k(`services.pkg${n}.ideal`)}</p>
+            <a class="btn pkg__btn" href={href('/contact', lang)}>
+              {t('services.packages.quote')}
+            </a>
+          </article>
+        ))
+      }
+    </div>
+  </section>
+
+  <section class="wrap block">
+    <h2 class="fade-in">{t('services.included.heading')}</h2>
+    <ul class="list fade-in">
+      {nums(6).map((n) => <li>{k(`services.included.${n}`)}</li>)}
+    </ul>
+  </section>
+
+  <section class="wrap block">
+    <h2 class="fade-in">{t('services.how.heading')}</h2>
+    <ol class="steps fade-in">
+      {
+        nums(4).map((n) => (
+          <li class="step">
+            <span class="eyebrow">{pad(n)}</span>
+            <h3>{k(`services.how.${n}.title`)}</h3>
+            <p>{k(`services.how.${n}.text`)}</p>
+          </li>
+        ))
+      }
+    </ol>
+  </section>
+
+  <section class="wrap block">
+    <h2 class="fade-in">{t('services.extras.heading')}</h2>
+    <ul class="list fade-in">
+      {nums(5).map((n) => <li>{k(`services.extras.${n}`)}</li>)}
+    </ul>
+  </section>
+
+  <section class="wrap block block--last">
+    <h2 class="fade-in">{t('services.faq.heading')}</h2>
+    <div class="faq fade-in">
+      {
+        nums(4).map((n) => (
+          <details class="faq__item">
+            <summary>
+              <span>{k(`services.faq.${n}.q`)}</span>
+              <span class="faq__icon" aria-hidden="true" />
+            </summary>
+            <p>{k(`services.faq.${n}.a`)}</p>
+          </details>
+        ))
+      }
+    </div>
+  </section>
+
+  <CtaBand lang={lang} />
+</BaseLayout>
+
+<style>
+  .head {
+    padding-block: 8.5rem 3rem;
+  }
+
+  .head h1 {
+    margin-top: 0.5rem;
+  }
+
+  .block {
+    padding-block: 3.5rem;
+    /* rule drawn inside the gutters, not across the full-width .wrap */
+    position: relative;
+  }
+
+  .block::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: var(--gutter);
+    right: var(--gutter);
+    border-top: 1px solid var(--color-border);
+  }
+
+  .block--last {
+    padding-block-end: 6rem;
+  }
+
+  .block > h2 {
+    margin-bottom: 2rem;
+  }
+
+  .packages {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .pkg {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 1.75rem;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+  }
+
+  .pkg__scope {
+    font-family: var(--font-serif);
+    font-size: 1.5rem;
+    line-height: 1.25;
+    color: var(--color-accent);
+  }
+
+  .pkg__ideal {
+    color: var(--color-text-muted);
+    margin-bottom: 1.25rem;
+  }
+
+  .pkg__btn {
+    margin-top: auto;
+  }
+
+  .list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: 1fr;
+    column-gap: 3rem;
+  }
+
+  .list li {
+    padding-block: 1rem;
+    border-top: 1px solid var(--color-border);
+  }
+
+  .steps {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2rem 1.5rem;
+  }
+
+  .step {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--color-border);
+  }
+
+  .step p {
+    color: var(--color-text-muted);
+  }
+
+  .faq {
+    max-width: 720px;
+  }
+
+  .faq__item {
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .faq__item summary {
+    list-style: none;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1.5rem;
+    padding-block: 1.25rem;
+    font-weight: 500;
+    cursor: pointer;
+  }
+
+  .faq__item summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .faq__icon {
+    position: relative;
+    flex: none;
+    width: 14px;
+    height: 14px;
+    transition: transform 0.3s var(--ease);
+  }
+
+  .faq__icon::before,
+  .faq__icon::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    width: 100%;
+    height: 1px;
+    background: currentColor;
+  }
+
+  .faq__icon::after {
+    transform: rotate(90deg);
+  }
+
+  .faq__item[open] .faq__icon {
+    transform: rotate(45deg);
+  }
+
+  .faq__item p {
+    padding-bottom: 1.25rem;
+    color: var(--color-text-muted);
+  }
+
+  @media (min-width: 640px) {
+    .list {
+      grid-template-columns: 1fr 1fr;
+    }
+
+    .steps {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  @media (min-width: 900px) {
+    .packages {
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.5rem;
+    }
+  }
+
+  @media (min-width: 1100px) {
+    .steps {
+      grid-template-columns: repeat(4, 1fr);
+    }
+  }
+</style>

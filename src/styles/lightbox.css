@@ -1,0 +1,191 @@
+/* Lightbox with zoom loupe. DOM is created by setupLightbox() in site.ts. */
+.lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: none;
+  overflow: hidden;
+  touch-action: none;
+  overscroll-behavior: contain;
+}
+
+.lightbox.is-open {
+  display: block;
+}
+
+.lightbox__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(12, 13, 15, 0.98);
+  opacity: 0;
+  transition: opacity 0.4s var(--ease);
+}
+
+.lightbox.is-visible .lightbox__backdrop {
+  opacity: 1;
+}
+
+/* Sized and positioned in px by site.ts, which animates a transform on it. */
+.lightbox__img {
+  position: absolute;
+  z-index: 1;
+  top: 0;
+  left: 0;
+  max-width: none;
+  transform-origin: 0 0;
+  cursor: zoom-in;
+  user-select: none;
+  -webkit-user-drag: none;
+  will-change: transform;
+}
+
+.lightbox__img.is-zoomed {
+  cursor: zoom-out;
+}
+
+.lightbox__btn,
+.lightbox__counter,
+.lightbox__hint {
+  position: fixed;
+  z-index: 2;
+  opacity: 0;
+  transition: opacity 0.4s var(--ease), background 0.2s var(--ease);
+}
+
+.lightbox.is-visible .lightbox__btn {
+  opacity: 1;
+  transition-delay: 0.25s, 0s;
+}
+
+.lightbox.is-visible .lightbox__counter {
+  opacity: 1;
+  transition-delay: 0.35s;
+}
+
+.lightbox__btn {
+  display: grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: #f6f6f4;
+}
+
+.lightbox__btn[hidden] {
+  display: none;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .lightbox__btn:hover {
+    background: rgba(255, 255, 255, 0.12);
+  }
+}
+
+.lightbox__btn:focus-visible {
+  outline-color: #f6f6f4;
+}
+
+.lightbox__close {
+  top: 1rem;
+  right: 1rem;
+}
+
+.lightbox__zoom {
+  top: 1rem;
+  right: 4rem;
+}
+
+.lightbox__zoom span {
+  display: grid;
+  place-items: center;
+}
+
+.lightbox__zoom .lightbox__zoom-out,
+.lightbox__zoom[aria-pressed='true'] .lightbox__zoom-in {
+  display: none;
+}
+
+.lightbox__zoom[aria-pressed='true'] .lightbox__zoom-out {
+  display: grid;
+}
+
+.lightbox__zoom[aria-pressed='true'] {
+  background: rgba(255, 255, 255, 0.16);
+}
+
+.lightbox__arrow {
+  top: 50%;
+  margin-top: -1.375rem;
+}
+
+.lightbox__arrow--prev {
+  left: 1rem;
+}
+
+.lightbox__arrow--next {
+  right: 1rem;
+}
+
+/* While zoomed, the arrows get out of the way of the photo. */
+.lightbox.is-zoomed .lightbox__arrow {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.lightbox__counter,
+.lightbox__hint {
+  left: 0;
+  right: 0;
+  text-align: center;
+  margin: 0;
+  pointer-events: none;
+}
+
+.lightbox__counter {
+  bottom: 1.25rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  color: rgba(246, 246, 244, 0.7);
+}
+
+.lightbox__hint {
+  bottom: 2.9rem;
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  color: rgba(246, 246, 244, 0.55);
+}
+
+.lightbox__hint.is-shown {
+  opacity: 1;
+}
+
+@media (max-width: 640px) {
+  .lightbox__close {
+    top: 0.5rem;
+    right: 0.5rem;
+  }
+  .lightbox__zoom {
+    top: 0.5rem;
+    right: 3.5rem;
+  }
+  .lightbox__arrow--prev {
+    left: 0.25rem;
+  }
+  .lightbox__arrow--next {
+    right: 0.25rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lightbox__backdrop,
+  .lightbox__btn,
+  .lightbox__counter,
+  .lightbox__hint,
+  .lightbox__img {
+    transition: none !important;
+  }
+}

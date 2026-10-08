@@ -1,0 +1,124 @@
+---
+import type { Lang } from '../i18n/ui';
+import { useTranslations } from '../i18n/ui';
+import { emailHref, instagramHref, site, whatsappHref } from '../lib/site';
+import BaseLayout from '../layouts/BaseLayout.astro';
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const t = useTranslations(lang);
+
+const w = site.whatsapp;
+const phone = `+${w.slice(0, 2)} ${w.slice(2, 5)} ${w.slice(5, 8)} ${w.slice(8)}`;
+
+const cards = [
+  { label: t('contact.email'), value: site.email, url: emailHref, external: false },
+  { label: t('contact.whatsapp'), value: phone, url: whatsappHref, external: true },
+  { label: t('contact.instagram'), value: `@${site.instagram}`, url: instagramHref, external: true },
+];
+---
+
+<BaseLayout
+  lang={lang}
+  path="/contact"
+  altPath="/contact"
+  title={`${t('contact.heading')} | ${t('site.title')}`}
+>
+  <section class="wrap contact">
+    <div class="contact__intro fade-in">
+      <p class="eyebrow">{t('contact.eyebrow')}</p>
+      <h1>{t('contact.heading')}</h1>
+      <p class="contact__text">{t('contact.intro')}</p>
+    </div>
+
+    <div class="contact__cards fade-in">
+      {
+        cards.map((c) => (
+          <a
+            class="card"
+            href={c.url}
+            target={c.external ? '_blank' : undefined}
+            rel={c.external ? 'noopener noreferrer' : undefined}
+          >
+            <span class="eyebrow">{c.label}</span>
+            <span class="card__value">{c.value}</span>
+            <span class="card__arrow" aria-hidden="true">→</span>
+          </a>
+        ))
+      }
+    </div>
+
+    <p class="contact__based fade-in">{t('contact.based')}</p>
+  </section>
+</BaseLayout>
+
+<style>
+  .contact {
+    padding-block: 8.5rem 6rem;
+  }
+
+  .contact__intro h1 {
+    margin-top: 0.5rem;
+  }
+
+  .contact__text {
+    margin-top: 1.25rem;
+    color: var(--color-text-muted);
+    max-width: 52ch;
+  }
+
+  .contact__cards {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    margin-top: 3rem;
+  }
+
+  .card {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 1.5rem;
+    border: 1px solid var(--color-border);
+    background: var(--color-surface);
+    transition: border-color 0.3s var(--ease);
+    min-width: 0;
+  }
+
+  .card__value {
+    font-family: var(--font-serif);
+    font-size: clamp(1.2rem, 2vw, 1.45rem);
+    line-height: 1.25;
+    overflow-wrap: anywhere;
+  }
+
+  .card__arrow {
+    margin-top: 0.75rem;
+    transition: transform 0.3s var(--ease);
+  }
+
+  .contact__based {
+    margin-top: 2.5rem;
+    font-size: 0.9rem;
+    color: var(--color-text-muted);
+  }
+
+  @media (min-width: 760px) {
+    .contact__cards {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .card:hover {
+      border-color: var(--color-text);
+    }
+
+    .card:hover .card__arrow {
+      transform: translateX(4px);
+    }
+  }
+</style>

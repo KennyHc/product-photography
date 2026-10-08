@@ -1,0 +1,408 @@
+---
+import type { Lang } from '../i18n/ui';
+import { languages, useTranslations } from '../i18n/ui';
+import { href } from '../lib/paths';
+import { site, emailHref, whatsappHref, instagramHref } from '../lib/site';
+
+interface Props {
+  lang: Lang;
+  altPath: string;
+  transparent?: boolean;
+}
+
+const { lang, altPath, transparent = false } = Astro.props;
+const t = useTranslations(lang);
+const otherLang: Lang = lang === 'en' ? 'es' : 'en';
+
+const links = [
+  { path: '/work', label: t('nav.work') },
+  { path: '/services', label: t('nav.services') },
+  { path: '/about', label: t('nav.about') },
+  { path: '/contact', label: t('nav.contact') },
+];
+
+// Same pages as the footer and contact page. Story pages count as "Work".
+const currentPath = Astro.url.pathname.replace(/\/$/, '');
+const isCurrent = (path: string) => {
+  const target = href(path, lang);
+  return currentPath === target || currentPath.startsWith(`${target}/`);
+};
+---
+
+<header class:list={['header', { 'header--transparent': transparent }]} data-header>
+  <div class="wrap header__inner">
+    <a href={href('/', lang)} class="header__brand">{site.name}</a>
+
+    <nav class="header__nav" aria-label={t('nav.primary')}>
+      <a href={href('/work', lang)}>{t('nav.work')}</a>
+      <a href={href('/services', lang)}>{t('nav.services')}</a>
+      <a href={href('/about', lang)}>{t('nav.about')}</a>
+      <a href={href('/contact', lang)}>{t('nav.contact')}</a>
+      <a href={href(altPath, otherLang)} class="header__lang" hreflang={otherLang}>
+        {t('nav.switchTo')}
+      </a>
+    </nav>
+
+    <button
+      type="button"
+      class="header__toggle"
+      data-nav-toggle
+      data-label-open={t('nav.openMenu')}
+      data-label-close={t('nav.closeMenu')}
+      aria-label={t('nav.openMenu')}
+      aria-expanded="false"
+      aria-controls="mobile-nav"
+    >
+      <span class="header__toggle-bar" aria-hidden="true"></span>
+      <span class="header__toggle-bar" aria-hidden="true"></span>
+      <span class="header__toggle-bar" aria-hidden="true"></span>
+    </button>
+  </div>
+
+  <div id="mobile-nav" class="mobile-nav" data-nav-panel>
+    <nav class="mobile-nav__links" aria-label={t('nav.mobile')}>
+      {
+        links.map((link, i) => (
+          <a
+            href={href(link.path, lang)}
+            class="mobile-nav__link"
+            style={`--i:${i}`}
+            aria-current={isCurrent(link.path) ? 'page' : undefined}
+          >
+            {link.label}
+          </a>
+        ))
+      }
+    </nav>
+
+    <hr class="mobile-nav__divider" style="--i:4" />
+
+    <p class="mobile-nav__lang" style="--i:5">
+      {
+        (Object.keys(languages) as Lang[]).map((code, i) => (
+          <>
+            {i > 0 && <span class="mobile-nav__lang-sep" aria-hidden="true">/</span>}
+            {code === lang ? (
+              <span class="mobile-nav__lang-current" lang={code}>
+                {code.toUpperCase()}
+              </span>
+            ) : (
+              <a
+                href={href(altPath, code)}
+                hreflang={code}
+                lang={code}
+                aria-label={languages[code]}
+              >
+                {code.toUpperCase()}
+              </a>
+            )}
+          </>
+        ))
+      }
+    </p>
+
+    <div class="mobile-nav__contact" style="--i:6">
+      <div class="mobile-nav__contact-links">
+        <a href={emailHref}>{site.email}</a>
+        <a href={whatsappHref} target="_blank" rel="noopener noreferrer">
+          {t('contact.whatsapp')}
+        </a>
+        <a href={instagramHref} target="_blank" rel="noopener noreferrer">
+          {t('contact.instagram')}
+        </a>
+      </div>
+      <p class="mobile-nav__based">{t('contact.based')}</p>
+    </div>
+  </div>
+</header>
+
+<style>
+  .header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 50;
+    background: var(--color-bg);
+    border-bottom: 1px solid var(--color-border);
+    transition: background 0.3s var(--ease), border-color 0.3s var(--ease);
+  }
+
+  .header--transparent {
+    background: transparent;
+    border-bottom-color: transparent;
+  }
+
+  .header--transparent .header__brand,
+  .header--transparent .header__nav a {
+    color: #fff;
+  }
+
+  .header--transparent.is-scrolled {
+    background: var(--color-bg);
+    border-bottom-color: var(--color-border);
+  }
+
+  .header--transparent.is-scrolled .header__brand,
+  .header--transparent.is-scrolled .header__nav a {
+    color: var(--color-text);
+  }
+
+  .header__inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 76px;
+  }
+
+  .header__brand {
+    font-family: var(--font-serif);
+    font-size: 1.25rem;
+    letter-spacing: 0.01em;
+    color: var(--color-text);
+  }
+
+  .header__nav {
+    display: none;
+    align-items: center;
+    gap: 2rem;
+    font-size: 0.85rem;
+    letter-spacing: 0.02em;
+  }
+
+  .header__nav a {
+    color: var(--color-text);
+    position: relative;
+  }
+
+  .header__lang {
+    border: 1px solid currentColor;
+    padding: 0.3em 0.7em;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    letter-spacing: 0.06em;
+  }
+
+  .header__lang:focus-visible,
+  .header__nav a:focus-visible {
+    outline-color: var(--color-accent);
+  }
+
+  .header--transparent:not(.is-scrolled) .header__nav a:focus-visible,
+  .header--transparent:not(.is-scrolled) .header__brand:focus-visible {
+    outline-color: #fff;
+  }
+
+  .header__toggle {
+    position: relative;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    background: transparent;
+    border: none;
+    color: inherit;
+    transition: color 0.3s var(--ease);
+  }
+
+  .header--transparent .header__toggle {
+    color: #fff;
+  }
+
+  .header--transparent.is-scrolled .header__toggle {
+    color: var(--color-text);
+  }
+
+  .header__toggle-bar {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 22px;
+    height: 2px;
+    margin: -1px 0 0 -11px;
+    background: currentColor;
+    transition: transform 0.4s var(--ease), opacity 0.4s var(--ease);
+  }
+
+  .header__toggle-bar:nth-child(1) {
+    transform: translateY(-6px);
+  }
+  .header__toggle-bar:nth-child(3) {
+    transform: translateY(6px);
+  }
+
+  .header.is-menu-open .header__toggle-bar:nth-child(1) {
+    transform: rotate(45deg);
+  }
+  .header.is-menu-open .header__toggle-bar:nth-child(2) {
+    opacity: 0;
+  }
+  .header.is-menu-open .header__toggle-bar:nth-child(3) {
+    transform: rotate(-45deg);
+  }
+
+  /* Over the home hero the bar is white; switch to dark on the panel. */
+  .header__brand {
+    transition: color 0.3s var(--ease);
+  }
+
+  .header.is-menu-open .header__brand,
+  .header.is-menu-open .header__toggle {
+    color: var(--color-text);
+  }
+
+  .header.is-menu-open {
+    border-bottom-color: transparent;
+  }
+
+  .header__inner {
+    position: relative;
+    z-index: 2;
+  }
+
+  /* Full-screen panel, wiped in from the top. It sits behind the header bar. */
+  .mobile-nav {
+    position: fixed;
+    inset: 0;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    padding: calc(76px + 2.5rem) var(--gutter) 2rem;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    background: var(--color-bg);
+    visibility: hidden;
+    clip-path: inset(0 0 100% 0);
+    transition: clip-path 0.35s var(--ease), visibility 0s linear 0.35s;
+  }
+
+  .mobile-nav.is-open {
+    visibility: visible;
+    clip-path: inset(0 0 0 0);
+    transition: clip-path 0.55s var(--ease), visibility 0s;
+  }
+
+  .mobile-nav__links {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+  }
+
+  .mobile-nav__link {
+    align-self: flex-start;
+    font-family: var(--font-serif);
+    font-size: clamp(2.2rem, 9vw, 3rem);
+    font-weight: 500;
+    line-height: 1.1;
+    letter-spacing: -0.01em;
+    color: var(--color-text);
+  }
+
+  .mobile-nav__link[aria-current='page']::after {
+    content: '';
+    display: inline-block;
+    width: 0.2em;
+    height: 0.2em;
+    margin-left: 0.3em;
+    border-radius: 50%;
+    background: var(--color-accent);
+    vertical-align: 0.15em;
+  }
+
+  .mobile-nav__divider {
+    width: 100%;
+    margin: 2.25rem 0 1.5rem;
+    border: none;
+    border-top: 1px solid var(--color-border);
+  }
+
+  .mobile-nav__lang {
+    display: flex;
+    gap: 0.6em;
+    font-size: 0.75rem;
+    font-weight: 500;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--color-text-muted);
+  }
+
+  .mobile-nav__lang-current {
+    color: var(--color-text);
+  }
+
+  .mobile-nav__contact {
+    margin-top: auto;
+    padding-top: 2.5rem;
+    font-size: 0.85rem;
+  }
+
+  .mobile-nav__contact-links {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .mobile-nav__based {
+    margin-top: 1.25rem;
+    font-size: 0.78rem;
+    color: var(--color-text-muted);
+  }
+
+  /* Stagger: each item fades up in turn once the wipe is under way, and
+     all fade out together on close. */
+  .mobile-nav__link,
+  .mobile-nav__divider,
+  .mobile-nav__lang,
+  .mobile-nav__contact {
+    opacity: 0;
+    transform: translateY(16px);
+    transition: opacity 0.2s var(--ease), transform 0.2s var(--ease);
+  }
+
+  .mobile-nav.is-open .mobile-nav__link,
+  .mobile-nav.is-open .mobile-nav__divider,
+  .mobile-nav.is-open .mobile-nav__lang,
+  .mobile-nav.is-open .mobile-nav__contact {
+    opacity: 1;
+    transform: none;
+    transition:
+      opacity 0.5s var(--ease) calc(0.2s + var(--i) * 60ms),
+      transform 0.5s var(--ease) calc(0.2s + var(--i) * 60ms);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .header__toggle-bar,
+    .header__toggle,
+    .header__brand {
+      transition: none;
+    }
+    .mobile-nav,
+    .mobile-nav.is-open {
+      clip-path: none;
+      transition: none;
+    }
+    .mobile-nav__link,
+    .mobile-nav__divider,
+    .mobile-nav__lang,
+    .mobile-nav__contact,
+    .mobile-nav.is-open .mobile-nav__link,
+    .mobile-nav.is-open .mobile-nav__divider,
+    .mobile-nav.is-open .mobile-nav__lang,
+    .mobile-nav.is-open .mobile-nav__contact {
+      transform: none;
+      transition: none;
+    }
+  }
+
+  @media (min-width: 860px) {
+    .header__nav {
+      display: flex;
+    }
+    .header__toggle {
+      display: none;
+    }
+    .mobile-nav {
+      display: none !important;
+    }
+  }
+</style>

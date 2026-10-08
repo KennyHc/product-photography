@@ -1,0 +1,291 @@
+---
+import { render } from 'astro:content';
+import { Image } from 'astro:assets';
+import type { Lang } from '../i18n/ui';
+import { useTranslations } from '../i18n/ui';
+import { href } from '../lib/paths';
+import type { Project } from '../lib/projects';
+import { getCover, getProjectImages, getRetouchPairs, getShowcase } from '../lib/images';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Gallery from '../components/Gallery.astro';
+import BeforeAfter from '../components/BeforeAfter.astro';
+import CtaBand from '../components/CtaBand.astro';
+
+interface Props {
+  lang: Lang;
+  entry: Project;
+  prev: Project;
+  next: Project;
+}
+
+const { lang, entry, prev, next } = Astro.props;
+const t = useTranslations(lang);
+const { Content } = await render(entry);
+const { title, client, category, date, shots, testimonial, summary } = entry.data;
+
+const images = getProjectImages(entry.id);
+const cover = getCover(images);
+const showcase = getShowcase(images);
+const pairs = getRetouchPairs(images);
+const meta = [t(`category.${category}`), client, date].filter(Boolean).join(' · ');
+---
+
+<BaseLayout
+  lang={lang}
+  path={`/work/${entry.id}`}
+  altPath={`/work/${entry.id}`}
+  title={`${title} | ${t('site.title')}`}
+  description={summary}
+  ogImage={cover?.file}
+>
+  <article class="project">
+    <div class="project__intro">
+    {
+      cover && (
+        <div class="project__cover">
+          <Image
+            src={cover.file}
+            alt={title}
+            widths={[640, 1024, 1600, 2200]}
+            sizes="(min-width: 960px) 45vw, 100vw"
+            loading="eager"
+            fetchpriority="high"
+            format="webp"
+            transition:name={`cover-${entry.id}`}
+          />
+        </div>
+      )
+    }
+
+    <header class="project__header">
+      <p class="eyebrow">{meta}</p>
+      <h1 class="project__title">{title}</h1>
+      <div class="project__body"><Content /></div>
+      {
+        shots && shots.length > 0 && (
+          <ul class="project__shots" aria-label={t('project.shots')}>
+            {shots.map((s) => (
+              <li class="project__shot">{t(`shot.${s}`)}</li>
+            ))}
+          </ul>
+        )
+      }
+    </header>
+    </div>
+
+    {
+      showcase.length > 0 && (
+        <section class="wrap project__gallery" aria-label={t('project.gallery')}>
+          <Gallery lang={lang} images={showcase} title={title} />
+        </section>
+      )
+    }
+
+    {
+      pairs.length > 0 && (
+        <section class="wrap project__retouch">
+          <h2 class="fade-in">{t('ba.heading')}</h2>
+          <div class="project__pairs">
+            {pairs.map((pair) => (
+              <BeforeAfter lang={lang} pair={pair} title={title} />
+            ))}
+          </div>
+        </section>
+      )
+    }
+
+    {
+      testimonial && (
+        <section class="wrap project__testimonial fade-in">
+          <p class="eyebrow">{t('project.testimonial')}</p>
+          <blockquote>
+            <p>&ldquo;{testimonial.quote}&rdquo;</p>
+            <cite>{testimonial.author}</cite>
+          </blockquote>
+        </section>
+      )
+    }
+
+    <nav class="wrap project__nav" aria-label={t('project.nav')}>
+      <a href={href(`/work/${prev.id}`, lang)} class="project__nav-link">
+        <span class="eyebrow">{t('project.prev')}</span>
+        <span class="project__nav-title">{prev.data.title}</span>
+      </a>
+      <a href={href('/work', lang)} class="project__nav-back">{t('project.back')}</a>
+      <a href={href(`/work/${next.id}`, lang)} class="project__nav-link project__nav-link--next">
+        <span class="eyebrow">{t('project.next')}</span>
+        <span class="project__nav-title">{next.data.title}</span>
+      </a>
+    </nav>
+  </article>
+  <CtaBand lang={lang} />
+</BaseLayout>
+
+<style>
+  /* Intro: full-width 4:5 cover above the title on phones; on desktop the
+     cover sits beside the title, uncropped, so vertical packshots keep their
+     tops and bottoms (a 16:10 crop cut them off). */
+  .project__intro {
+    margin-top: 76px;
+  }
+
+  .project__cover {
+    width: 100%;
+    aspect-ratio: 4 / 5;
+    overflow: hidden;
+    background: var(--color-bg-raised);
+  }
+
+  .project__cover :global(img) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .project__header {
+    padding: 2.5rem var(--gutter);
+  }
+
+  @media (min-width: 960px) {
+    .project__intro {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr);
+      align-items: end;
+      gap: 4rem;
+      max-width: var(--maxw);
+      margin-inline: auto;
+      padding: 2rem var(--gutter) 3.5rem;
+    }
+
+    /* Width is set explicitly from the available height, so the cover keeps
+       its 4:5 shape and never shrinks narrower than intended. */
+    .project__cover {
+      width: min(52vw, calc((100svh - 76px - 5.5rem) * 0.8));
+    }
+
+    .project__header {
+      padding: 0 0 0.5rem;
+    }
+  }
+
+  .project__title {
+    font-size: clamp(2rem, 5vw, 3.2rem);
+    margin-top: 0.4rem;
+    max-width: 24ch;
+  }
+
+  .project__body {
+    margin-top: 1rem;
+    max-width: 60ch;
+    color: var(--color-text-muted);
+  }
+
+  .project__shots {
+    list-style: none;
+    margin: 1.5rem 0 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .project__shot {
+    padding: 0.3rem 0.7rem;
+    border: 1px solid var(--color-border);
+    border-radius: 2px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    color: var(--color-text-muted);
+  }
+
+  .project__gallery {
+    padding-block: 0 4rem;
+  }
+
+  .project__retouch {
+    padding-block: 1rem 4rem;
+  }
+
+  .project__pairs {
+    display: grid;
+    gap: 2rem;
+    margin-top: 1.5rem;
+  }
+
+  .project__testimonial {
+    padding-block: 0 4rem;
+  }
+
+  .project__testimonial blockquote {
+    margin: 0.75rem 0 0;
+    max-width: 56ch;
+  }
+
+  .project__testimonial blockquote p {
+    font-family: var(--font-serif);
+    font-size: clamp(1.3rem, 2.8vw, 1.8rem);
+    line-height: 1.3;
+  }
+
+  .project__testimonial cite {
+    display: block;
+    margin-top: 0.9rem;
+    font-family: var(--font-sans);
+    font-style: normal;
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--color-text-muted);
+  }
+
+  .project__nav {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: 1rem;
+    padding-block: 2.5rem 4rem;
+    border-top: 1px solid var(--color-border);
+  }
+
+  .project__nav-link {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+  }
+
+  .project__nav-title {
+    font-family: var(--font-serif);
+    font-size: 1.1rem;
+  }
+
+  .project__nav-link--next {
+    text-align: right;
+    align-items: flex-end;
+  }
+
+  .project__nav-back {
+    font-size: 0.82rem;
+    color: var(--color-text-muted);
+    white-space: nowrap;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .project__nav-link:hover .project__nav-title,
+    .project__nav-back:hover {
+      color: var(--color-accent);
+    }
+  }
+
+  @media (max-width: 640px) {
+    .project__nav {
+      grid-template-columns: 1fr;
+      gap: 1.25rem;
+    }
+    .project__nav-link--next {
+      text-align: left;
+      align-items: flex-start;
+    }
+  }
+</style>
